@@ -50,4 +50,6 @@ func (s *server) routes() {
 		json.NewEncoder(w).Encode("OK")
 	}).Methods("GET")
 	s.router.HandleFunc("/create_user", models.CreateUser).Methods("POST")
+	s.router.HandleFunc("/get_user/{id}", models.GetUser).Methods("GET")
+	s.router.HandleFunc("/get_users", models.GetUsers).Methods("GET")
 }
