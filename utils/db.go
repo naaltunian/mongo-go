@@ -9,10 +9,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type dataBase struct {
-	session *mongo.Client
-	users   *mongo.Collection
+// type dataBase struct {
+// 	session *mongo.Client
+// 	users   *mongo.Collection
+// }
+
+// Database struct
+type Database struct {
+	MongoDb *mongo.Database
 }
+
+// DB var
+var DB Database
 
 // ConnectToDatabase connects to the mongo atlas database
 func ConnectToDatabase() {
@@ -24,9 +32,12 @@ func ConnectToDatabase() {
 		log.Fatal(err)
 	}
 
+	DB = Database{MongoDb: client.Database("mongo-go")}
+
 	err = client.Ping(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	log.Print("Connected to DB")
 }

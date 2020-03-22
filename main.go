@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	// "github.com/naaltunian/go-mongo/models"
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/naaltunian/go-mongo/models"
 	"github.com/naaltunian/go-mongo/utils"
 )
 
@@ -49,4 +49,5 @@ func (s *server) routes() {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("OK")
 	}).Methods("GET")
+	s.router.HandleFunc("/create_user", models.CreateUser).Methods("POST")
 }
