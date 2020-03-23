@@ -29,6 +29,7 @@ type UserModel struct {
 // CreateUser creates a user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	ctx := context.TODO()
 	var user UserModel
 
@@ -38,6 +39,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.ID = primitive.NewObjectID()
+	user.DateCreated = time.Now()
 
 	db := utils.DB.MongoDb
 
@@ -53,6 +55,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 // GetUser returns a user from the database
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	ctx := context.TODO()
 	var user UserModel
 	var params = mux.Vars(r)
@@ -73,6 +76,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 // GetUsers returns all users from the database
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	ctx := context.TODO()
 
 	var users []UserModel
