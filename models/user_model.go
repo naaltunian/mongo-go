@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -26,18 +27,18 @@ type UserModel struct {
 	DateCreated    time.Time          `json:"dateCreated,omitempty" bson:"dateCreated,omitempty"`
 }
 
+// UserModels is a slice of UserModel
+type userModels []UserModel
+
 // CreateUser creates a user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Add("Access-Control-Allow-Headers", "content-type")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
+
 	ctx := context.TODO()
-	var user UserModel
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		log.Println(err)
-	}
+	user := r.Context().Value(UserKey{}).(UserModel)
 
 	user.ID = primitive.NewObjectID()
 	user.DateCreated = time.Now()
@@ -46,11 +47,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	collection := db.Collection("users")
 
-	result, err := collection.InsertOne(ctx, user)
+	_, err := collection.InsertOne(ctx, user)
 	if err != nil {
 		log.Println(err)
 	}
-	json.NewEncoder(w).Encode(result)
+
+	err = user.toJSON(w)
+	if err != nil {
+		log.Println("Error marshalling to JSON", err)
+	}
 }
 
 // GetUser returns a user from the database
@@ -71,7 +76,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	json.NewEncoder(w).Encode(user)
+	err = user.toJSON(w)
 }
 
 // GetUsers returns all users from the database
@@ -80,7 +85,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	ctx := context.TODO()
 
-	var users []UserModel
+	var users userModels
 
 	db := utils.DB.MongoDb
 	collection := db.Collection("users")
@@ -107,5 +112,43 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	json.NewEncoder(w).Encode(users)
+	err = users.toJSON(w)
+}
+
+// FromJSON returns UserModel
+func (u *UserModel) FromJSON(r io.Reader) error {
+	e := json.NewDecoder(r)
+	return e.Decode(u)
+}
+
+// toJSON return UserModel as JSON
+func (u *UserModel) toJSON(w io.Writer) error {
+	e := json.NewEncoder(w)
+	return e.Encode(u)
+}
+
+// toJSON returns an array of UserModels as JSON
+func (u *userModels) toJSON(w io.Writer) error {
+	e := json.NewEncoder(w)
+	return e.Encode(u)
+}
+
+// UserKey for context
+type UserKey struct{}
+
+// ValidateUserMiddleware validates UserModel input from the client
+func ValidateUserMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := UserModel{}
+		err := user.FromJSON(r.Body)
+		if err != nil {
+			log.Println("Error deserializing user", err)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), UserKey{}, user)
+		r = r.WithContext(ctx)
+
+		next.ServeHTTP(w, r)
+	})
 }

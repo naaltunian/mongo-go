@@ -56,8 +56,5 @@ func (s *server) routes() {
 
 	postRouter := s.router.Methods("POST", "OPTIONS").Subrouter()
 	postRouter.HandleFunc("/create_user", models.CreateUser)
-	// postRouter.Use()
-
-	// s.router.HandleFunc("/get_user/{id}", models.GetUser).Methods("GET")
-	// s.router.HandleFunc("/get_users", models.GetUsers).Methods("GET")
+	postRouter.Use(models.ValidateUserMiddleware)
 }
