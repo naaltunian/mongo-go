@@ -49,7 +49,15 @@ func (s *server) routes() {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("OK")
 	}).Methods("GET")
-	s.router.HandleFunc("/create_user", models.CreateUser).Methods("POST", "OPTIONS")
-	s.router.HandleFunc("/get_user/{id}", models.GetUser).Methods("GET")
-	s.router.HandleFunc("/get_users", models.GetUsers).Methods("GET")
+
+	getRouter := s.router.Methods("GET").Subrouter()
+	getRouter.HandleFunc("/get_users", models.GetUsers)
+	getRouter.HandleFunc("/get_user/{id}", models.GetUser)
+
+	postRouter := s.router.Methods("POST", "OPTIONS").Subrouter()
+	postRouter.HandleFunc("/create_user", models.CreateUser)
+	// postRouter.Use()
+
+	// s.router.HandleFunc("/get_user/{id}", models.GetUser).Methods("GET")
+	// s.router.HandleFunc("/get_users", models.GetUsers).Methods("GET")
 }
