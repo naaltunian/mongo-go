@@ -38,7 +38,7 @@ func main() {
 	}
 	err := s.srv.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 

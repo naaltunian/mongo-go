@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -35,11 +34,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
 	ctx := context.TODO()
 	var user UserModel
-	fmt.Println(r.Body)
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		fmt.Println("error at decode")
-		// log.Fatal(err)
+		log.Println(err)
 	}
 
 	user.ID = primitive.NewObjectID()
@@ -51,8 +48,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	result, err := collection.InsertOne(ctx, user)
 	if err != nil {
-		fmt.Println("error at insert")
-		log.Fatal(err)
+		log.Println(err)
 	}
 	json.NewEncoder(w).Encode(result)
 }
@@ -72,7 +68,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	err := collection.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	json.NewEncoder(w).Encode(user)
@@ -92,7 +88,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	cur, err := collection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	defer cur.Close(ctx)
@@ -101,14 +97,14 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		var user UserModel
 		err := cur.Decode(&user)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		users = append(users, user)
 	}
 
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	json.NewEncoder(w).Encode(users)
