@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -29,13 +30,16 @@ type UserModel struct {
 // CreateUser creates a user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add("Access-Control-Allow-Headers", "content-type")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
 	ctx := context.TODO()
 	var user UserModel
-
+	fmt.Println(r.Body)
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error at decode")
+		// log.Fatal(err)
 	}
 
 	user.ID = primitive.NewObjectID()
@@ -47,6 +51,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	result, err := collection.InsertOne(ctx, user)
 	if err != nil {
+		fmt.Println("error at insert")
 		log.Fatal(err)
 	}
 	json.NewEncoder(w).Encode(result)
