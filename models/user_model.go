@@ -32,10 +32,6 @@ type userModels []UserModel
 
 // CreateUser creates a user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Add("Access-Control-Allow-Headers", "content-type")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST")
 
 	ctx := context.TODO()
 	user := r.Context().Value(UserKey{}).(UserModel)
@@ -139,6 +135,10 @@ type UserKey struct{}
 // ValidateUserMiddleware validates UserModel input from the client
 func ValidateUserMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Add("Access-Control-Allow-Headers", "content-type")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
 		user := UserModel{}
 		err := user.FromJSON(r.Body)
 		if err != nil {
